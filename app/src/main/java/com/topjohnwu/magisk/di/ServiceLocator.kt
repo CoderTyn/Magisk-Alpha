@@ -62,7 +62,7 @@ object ServiceLocator {
                 LogViewModel::class.java -> LogViewModel(logRepo)
                 SettingsViewModel::class.java -> SettingsViewModel(repoDB)
                 SuperuserViewModel::class.java -> SuperuserViewModel(policyDB)
-                InstallViewModel::class.java -> InstallViewModel(networkService)
+                InstallViewModel::class.java -> InstallViewModel(context.resources)
                 SuRequestViewModel::class.java -> SuRequestViewModel(policyDB, timeoutPrefs)
                 else -> clz.newInstance()
             } as T
