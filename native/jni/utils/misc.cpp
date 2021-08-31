@@ -121,6 +121,14 @@ int new_daemon_thread(thread_entry entry, void *arg) {
     return xpthread_create(&thread, &attr, entry, arg);
 }
 
+int new_daemon_thread(void(*entry)()) {
+    thread_entry proxy = [](void *entry) -> void * {
+        reinterpret_cast<void(*)()>(entry)();
+        return nullptr;
+    };
+    return new_daemon_thread(proxy, (void *) entry);
+}
+
 static char *argv0;
 static size_t name_len;
 void init_argv0(int argc, char **argv) {

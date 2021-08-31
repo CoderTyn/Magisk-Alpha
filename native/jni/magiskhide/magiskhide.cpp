@@ -47,7 +47,7 @@ void magiskhide_handler(int client, ucred *cred) {
 
     switch (req) {
     case ENABLE_HIDE:
-        res = enable_hide();
+        res = enable_hide(true);
         break;
     case DISABLE_HIDE:
         res = disable_hide();

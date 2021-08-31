@@ -7,22 +7,31 @@
 
 #include <daemon.hpp>
 
+#define SIGTERMTHRD SIGUSR1
 #define ISOLATED_MAGIC "isolated"
 
 // CLI entries
-int enable_hide();
+int enable_hide(bool late_props);
 int disable_hide();
 int add_list(int client);
 int rm_list(int client);
 void ls_list(int client);
 
+// Process monitoring
+extern pthread_t monitor_thread;
+[[noreturn]] void proc_monitor();
+
 // Utility functions
+void crawl_procfs(const std::function<bool(int)> &fn);
 bool hide_enabled();
-bool is_hide_target(int uid, std::string_view process);
+void rebuild_uid_map();
+bool is_hide_target(int uid, std::string_view process, int max_len = 1024);
 
 // Hide policies
 void hide_daemon(int pid, int client);
 void hide_unmount(int pid = -1);
+void hide_sensitive_props();
+void hide_late_sensitive_props();
 
 enum {
     ENABLE_HIDE,

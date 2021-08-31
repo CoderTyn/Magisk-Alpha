@@ -301,7 +301,7 @@ void post_fs_data(int client) {
         disable_hide();
     } else {
         exec_common_scripts("post-fs-data");
-        check_enable_hide();
+        check_enable_hide(false);
         handle_modules();
     }
 
@@ -350,7 +350,7 @@ void boot_complete(int client) {
     if (access(SECURE_DIR, F_OK) != 0)
         xmkdir(SECURE_DIR, 0700);
 
-    check_enable_hide();
+    check_enable_hide(true);
 
     if (!check_manager()) {
         if (access(MANAGERAPK, F_OK) == 0) {

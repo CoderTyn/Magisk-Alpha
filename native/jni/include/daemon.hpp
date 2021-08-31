@@ -63,5 +63,5 @@ void su_daemon_handler(int client, ucred *credential);
 void zygisk_handler(int client, ucred *cred);
 
 // MagiskHide
-void check_enable_hide();
+void check_enable_hide(bool late_props);
 int disable_hide();

@@ -21,7 +21,7 @@ static pthread_mutex_t hide_data_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static atomic<bool> hide_state = false;
 
-static void rebuild_uid_map() {
+void rebuild_uid_map() {
     uid_proc_map->clear();
     string data_path(APP_DATA_DIR);
     size_t len = data_path.length();
@@ -53,8 +53,7 @@ static void rebuild_uid_map() {
 // Leave /proc fd opened as we're going to read from it repeatedly
 static DIR *procfp;
 
-template<class F>
-static void crawl_procfs(F &&fn) {
+void crawl_procfs(const std::function<bool(int)> &fn) {
     rewinddir(procfp);
     dirent *dp;
     int pid;
@@ -256,7 +255,7 @@ static void update_hide_config() {
     db_err(err);
 }
 
-int enable_hide() {
+int enable_hide(bool late_props) {
     if (hide_state)
         return HIDE_IS_ENABLED;
 
@@ -276,6 +275,14 @@ int enable_hide() {
     if (!init_list())
         return DAEMON_ERROR;
 
+    hide_sensitive_props();
+    if (late_props)
+        hide_late_sensitive_props();
+
+    // Start monitoring
+    if (new_daemon_thread(&proc_monitor))
+        return DAEMON_ERROR;
+
     hide_state = true;
     update_hide_config();
 
@@ -288,6 +295,7 @@ int disable_hide() {
 
     if (hide_state) {
         LOGI("* Disable MagiskHide\n");
+        pthread_kill(monitor_thread, SIGTERMTHRD);
         delete uid_proc_map;
         delete hide_set;
         uid_proc_map = nullptr;
@@ -299,16 +307,19 @@ int disable_hide() {
     return DAEMON_SUCCESS;
 }
 
-void check_enable_hide() {
+void check_enable_hide(bool late_props) {
     if (!hide_state) {
         db_settings dbs;
         get_db_settings(dbs, HIDE_CONFIG);
         if (dbs[HIDE_CONFIG])
-            enable_hide();
+            enable_hide(late_props);
+    } else {
+        pthread_kill(monitor_thread, SIGALRM);
+        hide_late_sensitive_props();
     }
 }
 
-bool is_hide_target(int uid, string_view process) {
+bool is_hide_target(int uid, string_view process, int max_len) {
     mutex_guard lock(hide_data_lock);
 
     if (uid % 100000 >= 90000) {
@@ -318,6 +329,8 @@ bool is_hide_target(int uid, string_view process) {
             return false;
 
         for (auto &s : it->second) {
+            if (s.length() > max_len && process.length() > max_len && str_starts(s, process))
+                return true;
             if (str_starts(process, s))
                 return true;
         }
@@ -327,6 +340,8 @@ bool is_hide_target(int uid, string_view process) {
             return false;
 
         for (auto &s : it->second) {
+            if (s.length() > max_len && process.length() > max_len && str_starts(s, process))
+                return true;
             if (s == process)
                 return true;
         }
