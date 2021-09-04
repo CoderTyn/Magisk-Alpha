@@ -24,7 +24,7 @@ interface GithubPageServices {
 
 interface JSDelivrServices {
 
-    @GET("$MAGISK_FILES@{$REVISION}/snet")
+    @GET("$MAGISK_ALPHA@{$REVISION}/snet")
     @Streaming
     suspend fun fetchSafetynet(@Path(REVISION) revision: String = Const.SNET_REVISION): ResponseBody
 
