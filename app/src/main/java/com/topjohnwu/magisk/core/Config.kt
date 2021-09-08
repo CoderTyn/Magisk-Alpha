@@ -5,7 +5,6 @@ import android.content.SharedPreferences
 import android.util.Xml
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.edit
-import com.topjohnwu.magisk.BuildConfig
 import com.topjohnwu.magisk.core.utils.BiometricHelper
 import com.topjohnwu.magisk.core.utils.refreshLocale
 import com.topjohnwu.magisk.data.preference.PreferenceModel
@@ -99,7 +98,7 @@ object Config : PreferenceModel, DBConfig {
         const val SU_AUTO_ALLOW = 2
 
         // su timeout
-        val TIMEOUT_LIST = intArrayOf(0, -1, 10, 20, 30, 60)
+        val TIMEOUT_LIST = longArrayOf(0, -1, 10, 20, 30, 60)
 
         // repo order
         const val ORDER_NAME = 0
