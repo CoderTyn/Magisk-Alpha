@@ -27,7 +27,7 @@ class LogRepository(
                 }
             }
         }
-        Shell.su("cat ${Const.MAGISK_LOG}").to(list).await()
+        Shell.su("cat ${Const.MAGISK_LOG} || logcat -d -s Magisk").to(list).await()
         return list.buf.toString()
     }
 
